@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Conexión PostgreSQL</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      text-align: center;
+      max-width: 520px;
+      width: 100%;
+      padding: 2rem;
+    }
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: #f8fafc;
+    }
+    p.subtitle {
+      color: #94a3b8;
+      margin-bottom: 2.5rem;
+      font-size: 0.95rem;
+    }
+    .cards {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: center;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      width: 220px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover {
+      border-color: #6366f1;
+      transform: translateY(-3px);
+    }
+    .card .icon { font-size: 2.2rem; margin-bottom: 0.8rem; }
+    .card h2 { font-size: 1.05rem; margin-bottom: 0.4rem; color: #f1f5f9; }
+    .card p { font-size: 0.82rem; color: #94a3b8; line-height: 1.4; }
+
+    .card.env form { margin: 0; }
+    .card.env button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      color: inherit;
+      font: inherit;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🐘</div>
+    <h1>Conexión a PostgreSQL</h1>
+    <p class="subtitle">Elige cómo configurar la conexión a tu base de datos</p>
+
+    {% if error %}
+      <div style="background:#450a0a;color:#fca5a5;border-radius:8px;padding:0.7rem 1rem;margin-bottom:1.5rem;font-size:0.85rem;text-align:left;">{{ error }}</div>
+    {% endif %}
+
+    <div class="cards">
+      <a class="card" href="{{ url_for('form') }}">
+        <div class="icon">📝</div>
+        <h2>Formulario</h2>
+        <p>Introduce los datos de conexión manualmente</p>
+      </a>
+
+      <div class="card env">
+        <form action="{{ url_for('connect_env') }}" method="POST">
+          <button type="submit">
+            <div class="icon">🗂️</div>
+            <h2>Desde .env</h2>
+            <p>Lee las credenciales del archivo <code>.env</code> del proyecto</p>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

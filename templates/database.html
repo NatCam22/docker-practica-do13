@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ dbname }} — tablas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    header {
+      background: #1e293b; border-bottom: 1px solid #334155;
+      padding: 0.9rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    header .brand { font-size: 1.1rem; font-weight: 600; color: #f1f5f9; }
+    .breadcrumb { font-size: 0.82rem; color: #64748b; }
+    .breadcrumb a { color: #94a3b8; text-decoration: none; }
+    .breadcrumb a:hover { color: #e2e8f0; }
+
+    .flash { padding: 0.7rem 1.2rem; margin: 1rem 2rem 0; border-radius: 8px; font-size: 0.88rem; }
+    .flash.ok  { background: #14532d; color: #86efac; }
+    .flash.error { background: #450a0a; color: #fca5a5; }
+
+    main { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    h1 { font-size: 1.3rem; color: #f8fafc; margin-bottom: 1.5rem; }
+    h2 { font-size: 1rem; color: #cbd5e1; margin-bottom: 0.8rem; }
+
+    /* Tables list */
+    .table-grid {
+      display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2.5rem;
+    }
+    .table-card {
+      background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+      padding: 0.5rem 1rem; text-decoration: none; color: #a5b4fc;
+      font-size: 0.88rem; transition: border-color 0.2s;
+    }
+    .table-card:hover { border-color: #6366f1; color: #c7d2fe; }
+    .empty { color: #64748b; font-size: 0.85rem; font-style: italic; margin-bottom: 2rem; }
+
+    /* Create table form */
+    .panel {
+      background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+      padding: 1.5rem; margin-bottom: 2rem;
+    }
+    label { font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.25rem; }
+    input[type="text"], select {
+      background: #0f172a; border: 1px solid #334155; border-radius: 7px;
+      color: #f1f5f9; padding: 0.5rem 0.75rem; font-size: 0.88rem; outline: none;
+    }
+    input[type="text"]:focus, select:focus { border-color: #6366f1; }
+    input[type="text"].tname { width: 260px; }
+
+    /* Column rows */
+    #col-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .col-row { display: flex; gap: 0.6rem; align-items: center; }
+    .col-row input { width: 190px; }
+    .col-row select { min-width: 160px; }
+    .btn-remove {
+      background: none; border: 1px solid #334155; border-radius: 6px;
+      color: #94a3b8; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 0.8rem;
+      line-height: 1;
+    }
+    .btn-remove:hover { border-color: #ef4444; color: #ef4444; }
+
+    .row-actions { display: flex; gap: 0.8rem; margin-top: 1rem; align-items: center; flex-wrap: wrap; }
+    .btn-add {
+      background: none; border: 1px dashed #475569; border-radius: 7px;
+      color: #94a3b8; padding: 0.5rem 1rem; font-size: 0.85rem; cursor: pointer;
+    }
+    .btn-add:hover { border-color: #6366f1; color: #a5b4fc; }
+    .btn-submit {
+      background: #6366f1; color: white; border: none; border-radius: 7px;
+      padding: 0.55rem 1.3rem; font-size: 0.9rem; cursor: pointer;
+    }
+    .btn-submit:hover { background: #4f46e5; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">🐘 PostgreSQL Manager</span>
+    <span class="breadcrumb">
+      <a href="{{ url_for('dashboard') }}">Bases de datos</a> / {{ dbname }}
+    </span>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <main>
+    <h1>🗄️ {{ dbname }}</h1>
+
+    <h2>Tablas</h2>
+    {% if tables %}
+      <div class="table-grid">
+        {% for t in tables %}
+          <a class="table-card" href="{{ url_for('table_view', dbname=dbname, table=t) }}">📋 {{ t }}</a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Sin tablas aún. Crea la primera abajo.</p>
+    {% endif %}
+
+    <!-- Create table -->
+    <div class="panel">
+      <h2>Nueva tabla</h2>
+      <form action="{{ url_for('create_table', dbname=dbname) }}" method="POST">
+        <div style="margin-bottom:1rem;">
+          <label for="table_name">Nombre de la tabla</label>
+          <input class="tname" type="text" id="table_name" name="table_name" placeholder="mi_tabla" required>
+        </div>
+
+        <label>Columnas <span style="color:#475569;font-size:0.75rem;">(se añade id SERIAL automáticamente)</span></label>
+        <div id="col-list">
+          <div class="col-row">
+            <input type="text" name="col_name" placeholder="nombre_columna" required>
+            <select name="col_type">
+              {% for t in allowed_types %}
+                <option value="{{ t }}">{{ t }}</option>
+              {% endfor %}
+            </select>
+            <button type="button" class="btn-remove" onclick="removeRow(this)">✕</button>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn-add" onclick="addRow()">+ Añadir columna</button>
+          <button type="submit" class="btn-submit">Crear tabla</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const types = {{ allowed_types | tojson }};
+
+    function buildOptions() {
+      return types.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
+    function addRow() {
+      const row = document.createElement('div');
+      row.className = 'col-row';
+      row.innerHTML = `
+        <input type="text" name="col_name" placeholder="nombre_columna" required>
+        <select name="col_type">${buildOptions()}</select>
+        <button type="button" class="btn-remove" onclick="removeRow(this)">✕</button>
+      `;
+      document.getElementById('col-list').appendChild(row);
+    }
+
+    function removeRow(btn) {
+      const list = document.getElementById('col-list');
+      if (list.children.length > 1) btn.closest('.col-row').remove();
+    }
+  </script>
+</body>
+</html>

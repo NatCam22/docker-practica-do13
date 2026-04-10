@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ table }} — registros</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    header {
+      background: #1e293b; border-bottom: 1px solid #334155;
+      padding: 0.9rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    header .brand { font-size: 1.1rem; font-weight: 600; color: #f1f5f9; }
+    .breadcrumb { font-size: 0.82rem; color: #64748b; }
+    .breadcrumb a { color: #94a3b8; text-decoration: none; }
+    .breadcrumb a:hover { color: #e2e8f0; }
+
+    .flash { padding: 0.7rem 1.2rem; margin: 1rem 2rem 0; border-radius: 8px; font-size: 0.88rem; }
+    .flash.ok  { background: #14532d; color: #86efac; }
+    .flash.error { background: #450a0a; color: #fca5a5; }
+
+    main { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    h1 { font-size: 1.3rem; color: #f8fafc; margin-bottom: 1.5rem; }
+    h2 { font-size: 1rem; color: #cbd5e1; margin-bottom: 0.9rem; }
+
+    /* Records table */
+    .table-wrap { overflow-x: auto; margin-bottom: 2.5rem; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 0.85rem;
+      background: #1e293b; border-radius: 10px; overflow: hidden;
+    }
+    thead th {
+      background: #0f172a; color: #94a3b8; font-weight: 500;
+      padding: 0.65rem 1rem; text-align: left; border-bottom: 1px solid #334155;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #1e293b; }
+    tbody tr:hover { background: #0f172a55; }
+    tbody td { padding: 0.6rem 1rem; color: #cbd5e1; }
+    .empty { color: #64748b; font-size: 0.85rem; font-style: italic; margin-bottom: 2rem; }
+
+    /* Add record form */
+    .panel {
+      background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem;
+    }
+    .fields { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.2rem; }
+    .field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 160px; }
+    .field label { font-size: 0.78rem; color: #94a3b8; }
+    .field .type-hint { font-size: 0.7rem; color: #475569; }
+    .field input {
+      background: #0f172a; border: 1px solid #334155; border-radius: 7px;
+      color: #f1f5f9; padding: 0.5rem 0.75rem; font-size: 0.88rem; outline: none;
+      width: 100%;
+    }
+    .field input:focus { border-color: #6366f1; }
+    button[type="submit"] {
+      background: #6366f1; color: white; border: none; border-radius: 7px;
+      padding: 0.6rem 1.5rem; font-size: 0.9rem; cursor: pointer;
+    }
+    button[type="submit"]:hover { background: #4f46e5; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">🐘 PostgreSQL Manager</span>
+    <span class="breadcrumb">
+      <a href="{{ url_for('dashboard') }}">Bases de datos</a> /
+      <a href="{{ url_for('database', dbname=dbname) }}">{{ dbname }}</a> /
+      {{ table }}
+    </span>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <main>
+    <h1>📋 {{ table }}</h1>
+
+    <!-- Records -->
+    {% if rows %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              {% for h in col_headers %}<th>{{ h }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>{% for cell in row %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty">Sin registros aún.</p>
+    {% endif %}
+
+    <!-- Add record -->
+    <div class="panel">
+      <h2>Añadir registro</h2>
+      {% if columns %}
+        <form action="{{ url_for('insert_record', dbname=dbname, table=table) }}" method="POST">
+          <div class="fields">
+            {% for col_name, col_type in columns %}
+              <div class="field">
+                <label for="f_{{ col_name }}">{{ col_name }}</label>
+                <span class="type-hint">{{ col_type }}</span>
+                <input type="text" id="f_{{ col_name }}" name="{{ col_name }}" placeholder="{{ col_type }}">
+              </div>
+            {% endfor %}
+          </div>
+          <button type="submit">Insertar</button>
+        </form>
+      {% else %}
+        <p class="empty">Esta tabla no tiene columnas editables.</p>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>

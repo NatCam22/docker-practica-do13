@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard — PostgreSQL</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    /* Header */
+    header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 0.9rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header .brand { font-size: 1.1rem; font-weight: 600; color: #f1f5f9; }
+    header .conn-info { font-size: 0.78rem; color: #64748b; }
+    header a.logout {
+      font-size: 0.82rem; color: #94a3b8; text-decoration: none;
+      border: 1px solid #334155; border-radius: 6px; padding: 0.3rem 0.8rem;
+    }
+    header a.logout:hover { color: #f1f5f9; border-color: #64748b; }
+
+    /* Flash messages */
+    .flash { padding: 0.7rem 1.2rem; margin: 1rem 2rem 0; border-radius: 8px; font-size: 0.88rem; }
+    .flash.ok  { background: #14532d; color: #86efac; }
+    .flash.error { background: #450a0a; color: #fca5a5; }
+
+    /* Main layout */
+    main { max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    h1 { font-size: 1.3rem; color: #f8fafc; margin-bottom: 1.2rem; }
+
+    /* Create DB form */
+    .create-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.8rem;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .create-box label { font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.3rem; }
+    .create-box input {
+      background: #0f172a; border: 1px solid #334155; border-radius: 7px;
+      color: #f1f5f9; padding: 0.55rem 0.8rem; font-size: 0.9rem; outline: none; width: 220px;
+    }
+    .create-box input:focus { border-color: #6366f1; }
+    .create-box button {
+      background: #6366f1; color: white; border: none; border-radius: 7px;
+      padding: 0.55rem 1.2rem; font-size: 0.9rem; cursor: pointer;
+    }
+    .create-box button:hover { background: #4f46e5; }
+
+    /* DB list */
+    .db-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.8rem;
+    }
+    .db-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      text-decoration: none;
+      color: #e2e8f0;
+      transition: border-color 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .db-card:hover { border-color: #6366f1; transform: translateY(-2px); }
+    .db-card .icon { font-size: 1.3rem; }
+    .db-card .name { font-size: 0.92rem; font-weight: 500; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="brand">🐘 PostgreSQL Manager</span>
+    <span class="conn-info">{{ user }}@{{ host }}:{{ port }}</span>
+    <a class="logout" href="{{ url_for('logout') }}">Desconectar</a>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <main>
+    <h1>Bases de datos</h1>
+
+    <div class="create-box">
+      <form action="{{ url_for('create_db') }}" method="POST" style="display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+          <label for="dbname">Nueva base de datos</label>
+          <input type="text" id="dbname" name="dbname" placeholder="nombre_db" required>
+        </div>
+        <button type="submit">+ Crear</button>
+      </form>
+    </div>
+
+    <div class="db-grid">
+      {% for db in databases %}
+        <a class="db-card" href="{{ url_for('database', dbname=db) }}">
+          <span class="icon">🗄️</span>
+          <span class="name">{{ db }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </main>
+</body>
+</html>

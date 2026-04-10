@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultado de conexión</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 540px;
+    }
+    .back {
+      display: inline-block;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+    .back:hover { color: #e2e8f0; }
+    h1 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+
+    /* Éxito */
+    .badge-ok {
+      display: inline-block;
+      background: #14532d;
+      color: #86efac;
+      border-radius: 999px;
+      padding: 0.25rem 0.8rem;
+      font-size: 0.8rem;
+      margin-bottom: 1.2rem;
+    }
+    .badge-err {
+      display: inline-block;
+      background: #450a0a;
+      color: #fca5a5;
+      border-radius: 999px;
+      padding: 0.25rem 0.8rem;
+      font-size: 0.8rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .info-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 1.2rem;
+      line-height: 1.6;
+    }
+    .info-box strong { color: #e2e8f0; }
+
+    .error-box {
+      background: #1c0606;
+      border: 1px solid #7f1d1d;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: #fca5a5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    h2 { font-size: 1rem; margin: 1.2rem 0 0.6rem; color: #f1f5f9; }
+    .table-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .table-list li {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.82rem;
+      color: #a5b4fc;
+    }
+    .empty { color: #64748b; font-size: 0.85rem; font-style: italic; }
+
+    .actions { margin-top: 1.8rem; display: flex; gap: 0.8rem; }
+    .btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.65rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+    }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-secondary { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .btn-secondary:hover { color: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="back" href="{{ url_for('index') }}">← Inicio</a>
+
+    {% if error %}
+      <h1>Error de conexión</h1>
+      <span class="badge-err">✗ Fallido · vía {{ source }}</span>
+
+      {% if params %}
+      <div class="info-box">
+        <strong>Host:</strong> {{ params.host }}:{{ params.port }}<br>
+        <strong>Base de datos:</strong> {{ params.dbname }}<br>
+        <strong>Usuario:</strong> {{ params.user }}
+      </div>
+      {% endif %}
+
+      <div class="error-box">{{ error }}</div>
+
+    {% else %}
+      <h1>Conexión exitosa</h1>
+      <span class="badge-ok">✓ Conectado · vía {{ source }}</span>
+
+      <div class="info-box">
+        <strong>Host:</strong> {{ params.host }}:{{ params.port }}<br>
+        <strong>Base de datos:</strong> {{ params.dbname }}<br>
+        <strong>Usuario:</strong> {{ params.user }}<br>
+        <strong>Versión:</strong> {{ version.split(',')[0] }}
+      </div>
+
+      <h2>Tablas públicas</h2>
+      {% if tables %}
+        <ul class="table-list">
+          {% for t in tables %}
+            <li>{{ t }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="empty">La base de datos no tiene tablas aún.</p>
+      {% endif %}
+    {% endif %}
+
+    <div class="actions">
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al inicio</a>
+      {% if error %}
+        <a href="{{ url_for('form') if source == 'formulario' else url_for('index') }}"
+           class="btn btn-primary">Reintentar</a>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
